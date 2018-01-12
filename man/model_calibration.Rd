@@ -8,7 +8,8 @@ and quick validation of a (new) model.}
 model_calibration(model = "TT", data = phenocam_DB,
   control = list(max.call = 2000),
   par_ranges = sprintf("\%s/extdata/parameter_ranges.csv",
-  path.package("phenor")), plot = TRUE, ...)
+  path.package("phenor")), plot = TRUE, random_seed = round(runif(1, 1,
+  1000)), ...)
 }
 \arguments{
 \item{model}{the model name to be used in optimizing the model}
@@ -24,6 +25,8 @@ defaults to the parameter ranges as provided with the current models
 and set forth by Basler (2016)}
 
 \item{plot}{TRUE / FALSE, plot model fit}
+
+\item{random_seed}{random seed for cross-validation}
 
 \item{...}{additional parameters to be passed to the model}
 }
