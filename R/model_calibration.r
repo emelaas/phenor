@@ -50,6 +50,9 @@ model_calibration = function(model = "TT",
   d = d[,3:ncol(d)]
   d = as.matrix(d)
 
+  # set random seed for a given run
+  set.seed(round(runif(1,1,1000)))
+
   # optimize paramters
   optim.par = optimize_parameters(
     par = NULL,
