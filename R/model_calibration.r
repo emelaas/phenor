@@ -28,8 +28,8 @@ model_calibration = function(model = "TT",
                             control = list(max.call = 2000),
                             par_ranges = sprintf("%s/extdata/parameter_ranges.csv",
                                                  path.package("phenor")),
-                            plot = TRUE,
                             random_seed = round(runif(1,1,1000)),
+                            plot = TRUE,
                             ... ){
 
   # convert to a flat format for speed
