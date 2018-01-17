@@ -10,6 +10,7 @@
 #' and set forth by Basler (2016)
 #' @param control list of control parameters to be passed to the optimizer
 #' @param plot TRUE / FALSE, plot model fit
+#' @param random_seed random seed for cross-validation
 #' @param ... additional parameters to be passed to the model
 #' @keywords phenology, model, validation
 #' @export
@@ -27,6 +28,7 @@ model_calibration = function(model = "TT",
                             control = list(max.call = 2000),
                             par_ranges = sprintf("%s/extdata/parameter_ranges.csv",
                                                  path.package("phenor")),
+                            random_seed = round(runif(1,1,1000)),
                             plot = TRUE,
                             ... ){
 
@@ -50,8 +52,9 @@ model_calibration = function(model = "TT",
   d = d[,3:ncol(d)]
   d = as.matrix(d)
 
-  # set random seed for a given run
-  set.seed(round(runif(1,1,1000)))
+
+  # set random seed for optimization
+  set.seed(random_seed)
 
   # optimize paramters
   optim.par = optimize_parameters(
