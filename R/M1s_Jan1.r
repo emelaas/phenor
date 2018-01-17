@@ -12,7 +12,7 @@
 #' @examples
 #'
 #' \dontrun{
-#' estimate = TT(data = data, par = par)
+#' estimate = M1s_Jan1(data = data, par = par)
 #'}
 
 M1s_Jan1 = function(par, data){
