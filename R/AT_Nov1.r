@@ -17,7 +17,7 @@
 AT_Nov1 = function(par, data){
 
   # exit the routine as some parameters are missing
-  if (length(par) != 5){
+  if (length(par) != 4){
     stop("model parameter(s) out of range (too many, too few)")
   }
 
