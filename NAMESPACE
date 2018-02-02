@@ -3,6 +3,7 @@
 export(AGSI)
 export(AICc)
 export(AT)
+export(AT_Nov1)
 export(CDD)
 export(GRP)
 export(LIN)
