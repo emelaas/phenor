@@ -38,7 +38,7 @@ AT_Jan1 = function(par, data){
   # forcing
   Rf = data$Ti - T_base
   Rf[Rf <= 0] = 0
-  Rf[1:41,] = 0
+  Rf[1:102,] = 0
   Sf = apply(Rf, 2, cumsum)
 
   Sfc = Sf - (a + b * exp(c * Sc))
