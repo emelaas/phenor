@@ -30,6 +30,7 @@ AT_Jan1 = function(par, data){
 
   # chilling
   Rc = data$Ti - T_base
+  Rc[Rc > 0] = 0
   Rc[Rc < 0] = 1
   Rc[1:102,] = 0
   Sc = apply(Rc, 2, cumsum)
