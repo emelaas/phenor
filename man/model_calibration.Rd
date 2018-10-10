@@ -5,11 +5,11 @@
 \title{Model validation routine to faciliate model development
 and quick validation of a (new) model.}
 \usage{
-model_calibration(model = "TT", data = phenocam_DB,
+model_calibration(model = "TT", data = phenocam_DB, method = "GenSA",
   control = list(max.call = 2000),
   par_ranges = sprintf("\%s/extdata/parameter_ranges.csv",
-  path.package("phenor")), random_seed = round(runif(1, 1, 1000)),
-  plot = TRUE, ...)
+  path.package("phenor")), plot = TRUE, random_seed = round(runif(1, 1,
+  1000)), ...)
 }
 \arguments{
 \item{model}{the model name to be used in optimizing the model}
@@ -18,15 +18,20 @@ model_calibration(model = "TT", data = phenocam_DB,
 format_modis() routines, or adhering to the general model optimization
 input format.}
 
+\item{method}{optimization method to use (default = GenSA)
+- GenSA :  Generalized Simulated Annealing algorithm
+- genoud : GENetic Optimization Using Derivatives
+- BayesianTools: various bayesian based optimization tools}
+
 \item{control}{list of control parameters to be passed to the optimizer}
 
 \item{par_ranges}{a vector of starting parameter values (function specific)
 defaults to the parameter ranges as provided with the current models
 and set forth by Basler (2016)}
 
-\item{random_seed}{random seed for cross-validation}
-
 \item{plot}{TRUE / FALSE, plot model fit}
+
+\item{random_seed}{random seed for cross-validation}
 
 \item{...}{additional parameters to be passed to the model}
 }
