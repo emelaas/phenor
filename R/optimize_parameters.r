@@ -31,7 +31,7 @@
 
 optimize_parameters = function(par = NULL,
   data = data,
-  cost = wrss,
+  cost = rmse,
   model = "TT",
   method = "GenSA",
   lower = NULL,
