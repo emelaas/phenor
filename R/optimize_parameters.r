@@ -31,7 +31,7 @@
 
 optimize_parameters = function(par = NULL,
   data = data,
-  cost = rmse,
+  cost = wrss,
   model = "TT",
   method = "GenSA",
   lower = NULL,
@@ -39,23 +39,23 @@ optimize_parameters = function(par = NULL,
   maxit = NULL,
   control = NULL,
   ... ) {
-  
+
   # check if starting parameters are present
   if (is.null(lower) | is.null(upper)){
     stop('Please provide upper and lower boundaries to the parameter space.\n
       Not defining your parameters space might yield good fits,\n
       for a wrong reason.')
   }
-  
+
   # check if starting parameters are balanced
   if (length(lower) != length(upper)){
     stop('Parameter boundaries should be balanced')
   }
-  
+
   # convert to a flat format for speed
   # (increases speed > 20x)
   data = flat_format(data)
-  
+
   if ( tolower(method) == "gensa" ){
     # one can opt to automatically generate starting values
     # in GenSA, this might yield better results. Set the
@@ -71,13 +71,13 @@ optimize_parameters = function(par = NULL,
       ...
     )
   }
-  
+
   if (tolower(method) == "genoud"){
     # optimize model parameters using the
     # GENetic Optimization Using Derivatives
     # needs more tweaking to work out of the box
     # on most models
-    
+
     # stop if no starting parameters are provided
     if (is.null(par)){
       stop('The genoud algorithm needs defined strating parameters!')
@@ -92,15 +92,15 @@ optimize_parameters = function(par = NULL,
       model = model,
       ...)
   }
-  
+
   # BayesianTools
   if (tolower(method) == "bayesiantools"){
-    
+
     # Set the sd metric fixed to 1/5 of the range defined
     # by upper and lower limits. This ensures proper sampling
     # across widely different ranges.
     sd_range = abs(upper - lower)/5
-    
+
     # setup the bayes run, no message forwarding is provided
     # so wrap the function in a do.call
     setup = BayesianTools::createBayesianSetup(
@@ -112,17 +112,17 @@ optimize_parameters = function(par = NULL,
             sd_range = sd_range))},
       lower = lower,
       upper = upper)
-    
+
     # calculate the runs
     out = BayesianTools::runMCMC(bayesianSetup = setup,
       sampler = control$sampler,
       settings = control$settings)
-    
+
     # correct formatting in line with other outputs
     optim_par = list("par" = BayesianTools::MAP(out)$parametersMAP,
       "bt_output" = out)
   }
-  
+
   # return the optimization data (parameters)
   # check formatting for post-processing
   return(optim_par)
