@@ -35,6 +35,6 @@ wrss = function(par, data, model, ...) {
   } else {
     # return the wRSS between the validation data and
     # the output of the model
-    return(abs(1-sd(val)/sd(out))*(sum((val - out) ^ 2, na.rm = T)))
+    return(sum(abs(val-mean(val))*(val - out) ^ 2, na.rm = T))
   }
 }
