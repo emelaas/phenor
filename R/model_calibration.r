@@ -9,6 +9,8 @@
 #'    - GenSA :  Generalized Simulated Annealing algorithm
 #'    - genoud : GENetic Optimization Using Derivatives
 #'    - BayesianTools: various bayesian based optimization tools
+#' @param cost  the cost function to use in the optimization, it should return
+#' a RMSE or other value which needs to be minimized
 #' @param par_ranges a vector of starting parameter values (function specific)
 #' defaults to the parameter ranges as provided with the current models
 #' and set forth by Basler (2016)
@@ -30,6 +32,7 @@
 model_calibration = function(model = "TT",
   data = phenocam_DB,
   method = "GenSA",
+  cost = rmse,
   control = list(max.call = 2000),
   par_ranges = sprintf("%s/extdata/parameter_ranges.csv",
     path.package("phenor")),
