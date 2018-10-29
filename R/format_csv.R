@@ -193,16 +193,16 @@ format_csv <- function(file = "~/Desktop/vame_phenology.csv",
   # subtract 1 year by default. If download fails subtract another year
   end = as.numeric(format(as.Date(Sys.Date()),"%Y")) - 1
 
-  daymet_test = try(daymetr::download_daymet(
-    start = end,
-    end = end,
-    internal = TRUE,
-    quiet = TRUE
-  ))
+  #daymet_test = try(daymetr::download_daymet(
+  #  start = end,
+  #  end = end,
+  #  internal = TRUE,
+  #  quiet = TRUE
+  #))
 
-  if (inherits(daymet_test,"try-error")){
-    end = end - 1
-  }
+  #if (inherits(daymet_test,"try-error")){
+  #  end = end - 1
+  #}
 
   # get individual sites form the filenames
   sites = unique(data$ID)
