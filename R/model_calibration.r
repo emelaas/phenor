@@ -67,6 +67,7 @@ model_calibration = function(model = "TT",
   optim_par = optimize_parameters(
     par = NULL,
     data = data,
+    cost = cost,
     model = model,
     method = method,
     lower = as.numeric(d[1,]),
