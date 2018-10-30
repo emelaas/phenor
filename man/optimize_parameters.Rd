@@ -6,7 +6,7 @@
 and a specified model (be sure to match parameter and requirements
 with the model.}
 \usage{
-optimize_parameters(par = NULL, data = data, cost = wrss, model = "TT",
+optimize_parameters(par = NULL, data = data, cost = rmse, model = "TT",
   method = "GenSA", lower = NULL, upper = NULL, maxit = NULL,
   control = NULL, ...)
 }
