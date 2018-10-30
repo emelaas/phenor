@@ -4,11 +4,15 @@
 #' @param random_seeds a vector with random seeds for cross validation
 #' @param models list of models to compare
 #' @param data which standard or custom dataset to use
-#' @param method which optimization method to use, GenSA or rgenoud
-#' (default = GenSA)
+#' @param method optimization method to use (default = GenSA)
+#'    - GenSA :  Generalized Simulated Annealing algorithm
+#'    - genoud : GENetic Optimization Using Derivatives
+#'    - BayesianTools: various bayesian based optimization tools
 #' @param control additional optimization control parameters
 #' (default = list(max.call = 5000, temperature = 10000))
 #' @param par_ranges location of the parameter ranges of the models
+#' @param ncores number of cores to use to calculate model comparisons,
+#' system specific and defaults to 1 threat (default = 1)
 #' @keywords phenology, model, validation, comparison
 #' @export
 #' @examples
@@ -23,24 +27,25 @@
 #' }
 
 model_comparison = function(random_seeds = c(1,12,40),
-                            models = c("LIN","TT","TTs","PTT","PTTs",
-                                       "M1","M1s","AT","SQ","SQb","SM1",
-                                       "SM1b","PA","PAb","PM1",
-                                       "PM1b","UN","UM1","SGSI","AGSI"),
-                            data = phenocam_DB,
-                            method = "GenSA",
-                            control = list(max.call = 5000,
-                                           temperature = 10000),
-                            par_ranges = sprintf("%s/extdata/parameter_ranges.csv",
-                                                 path.package("phenor"))){
+  models = c("LIN","TT","TTs","PTT","PTTs",
+    "M1","M1s","AT","SQ","SQb","SM1",
+    "SM1b","PA","PAb","PM1",
+    "PM1b","UN","UM1","SGSI","AGSI"),
+  data = phenocam_DB,
+  method = "GenSA",
+  control = list(max.call = 5000,
+    temperature = 10000),
+  par_ranges = sprintf("%s/extdata/parameter_ranges.csv",
+    path.package("phenor")),
+  ncores = 1){
 
   # convert to a flat format for speed
   data = flat_format(data)
 
   # load parameter ranges
   par_ranges = utils::read.table(par_ranges,
-                          header = TRUE,
-                          sep = ",")
+    header = TRUE,
+    sep = ",")
 
   # subset the parameter range
   if (!any(par_ranges$model %in% models)){
@@ -59,81 +64,154 @@ model_comparison = function(random_seeds = c(1,12,40),
   # Both for loops can be parallelized,
   # to speed up comparisons.
 
-  # implement a progress bar for graphical feedback
-  # this to gauge speed limitations
-  cat("This might take a while ... \n")
-  pb = utils::txtProgressBar(min = 0, max = nr_models*nr_seeds, style = 3)
-  k = 1
+  if (tolower(method) != "bayesiantools"){
 
-  # iterate all instances
-  for (i in 1:nr_models) {
+    # implement a progress bar for graphical feedback
+    # this to gauge speed limitations
+    cat("This might take a while ... \n")
+    pb = utils::txtProgressBar(min = 0, max = nr_models, style = 3)
+    k = 1
 
-    # select ranges
-    d = par_ranges[par_ranges$model == models[i],]
-    d = d[,!is.na(d[1,])]
-    d = d[,3:ncol(d)]
-    d = as.matrix(d)
+    # iterate all instances
+    for (i in 1:nr_models) {
 
-    # create temp matrices
-    tmp_parameters = matrix(NA,nr_seeds,ncol(d))
-    predicted_values = matrix(NA,nr_seeds,nr_obs)
+      # select ranges
+      d = par_ranges[par_ranges$model == models[i],]
+      d = d[,!is.na(d[1,])]
+      d = d[,3:ncol(d)]
+      d = as.matrix(d)
 
-    for (j in 1:nr_seeds) {
+      # start cluster, default is SOCK cluster
+      cl <- snow::makeCluster(ncores)
 
-      # progress bar for the models
-      utils::setTxtProgressBar(pb, k);
-      k = k + 1
+      # optimize models
+      optimized_data = snow::parLapply(cl,
+        random_seeds,
+        function(random_seed){
 
-      # set random seed for a given run
-      set.seed(random_seeds[j])
+          # load library in individual workers
+          # similar the foreach .package argument
+          library(phenor)
+
+          # set random seed for a given run
+          set.seed(random_seed)
+
+          # progress bar for the models
+          utils::setTxtProgressBar(pb, k);
+          k = k + 1
+
+          # optimize the model parameters using
+          # GenSA algorithm
+          par = optimize_parameters(
+            par = NULL,
+            data = data,
+            model = models[i],
+            method = method,
+            lower = as.numeric(d[1,]),
+            upper = as.numeric(d[2,]),
+            control = control
+          )
+
+          # add model output using the estiamted parameters
+          predicted_values = estimate_phenology(
+            data = data,
+            model = models[i],
+            par = par$par
+          )
+
+          # return data
+          return(list("parameters" = par$par,
+            "predicted_values" = predicted_values))
+        })
+
+      # stop cluster
+      snow::stopCluster(cl)
+
+      # stuff everything in a list
+      tmp = list("parameters" = do.call("rbind",
+        lapply(optimized_data,
+          function(x)x$parameters)),
+        "predicted_values" = do.call("rbind",
+          lapply(optimized_data,
+            function(x)x$predicted_values)))
+
+      # append to the list
+      model_estimates[i] = list(tmp)
+    }
+
+    # close the progress bar element
+    close(pb)
+
+  } else {
+
+    # warning on random seeds
+    if(length(random_seeds) > 1){
+      message("Only the first random seed will be used, please use the 'nchains' parameter
+        in BT to specify the number random initial conditions!")
+    }
+
+    # parallel process the models optimizations
+    # set ncores to number of models if specified
+    # ncores exceeds the number of models
+    if(ncores > nr_models) ncores <- nr_models
+
+    # implement a progress bar for graphical feedback
+    # this to gauge speed limitations
+    cat("This might take a while ... \n")
+
+    # start cluster, default is SOCK cluster
+    cl <- snow::makeCluster(ncores)
+
+    # optimize models
+    model_estimates = snow::parLapply(cl, models, function(model){
+
+      # select ranges
+      d = par_ranges[par_ranges$model == model,]
+      d = d[,!is.na(d[1,])]
+      d = d[,3:ncol(d)]
+      d = as.matrix(d)
 
       # optimize the model parameters using
       # GenSA algorithm
-      par = optimize_parameters(
+      par = phenor::optimize_parameters(
         par = NULL,
         data = data,
-        model = models[i],
+        model = model,
         method = method,
         lower = as.numeric(d[1,]),
         upper = as.numeric(d[2,]),
         control = control
       )
 
-      # put optimial parameters in the output
-      # matrix
-      tmp_parameters[j,1:length(par$par)] = par$par
-
       # add model output using the estiamted parameters
-      predicted_values[j,] = estimate_phenology(
+      predicted_values = estimate_phenology(
         data = data,
-        model = models[i],
+        model = model,
         par = par$par
       )
+
+      # return data
+      return(list("parameters" = par$par,
+        "predicted_values" = predicted_values,
+        "parameter_uncertainty" = par$par, # CI ??
+        "bt_output" = par$bt_output))
+    })
+
+    # stop cluster
+    snow::stopCluster(cl)
+
     }
 
-    # stuff everything in a list
-    tmp = list("parameters" = tmp_parameters,
-               "predicted_values" = predicted_values)
-
-    # append to the list
-    model_estimates[i] = list(tmp)
-  }
-
-  # close the progress bar element
-  close(pb)
+  # collect garbage, especially unclosed connections
+  # or memory stacks
+  gc()
 
   # rename model output for clarity
   names(model_estimates) = models
 
   # concat comparison data
   comparison = list("modelled" = model_estimates,
-                    "measured" = data$transition_dates)
-
-  # check if it's a comparison between two models
-  # if so plot the arrrow graph
-  if (length(models)==2){
-
-  }
+    "measured" = data$transition_dates)
 
   # return data
   return(comparison)

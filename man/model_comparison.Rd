@@ -10,7 +10,7 @@ model_comparison(random_seeds = c(1, 12, 40), models = c("LIN", "TT", "TTs",
   "PM1", "PM1b", "UN", "UM1", "SGSI", "AGSI"), data = phenocam_DB,
   method = "GenSA", control = list(max.call = 5000, temperature = 10000),
   par_ranges = sprintf("\%s/extdata/parameter_ranges.csv",
-  path.package("phenor")))
+  path.package("phenor")), ncores = 1)
 }
 \arguments{
 \item{random_seeds}{a vector with random seeds for cross validation}
@@ -19,13 +19,18 @@ model_comparison(random_seeds = c(1, 12, 40), models = c("LIN", "TT", "TTs",
 
 \item{data}{which standard or custom dataset to use}
 
-\item{method}{which optimization method to use, GenSA or rgenoud
-(default = GenSA)}
+\item{method}{optimization method to use (default = GenSA)
+- GenSA :  Generalized Simulated Annealing algorithm
+- genoud : GENetic Optimization Using Derivatives
+- BayesianTools: various bayesian based optimization tools}
 
 \item{control}{additional optimization control parameters
 (default = list(max.call = 5000, temperature = 10000))}
 
 \item{par_ranges}{location of the parameter ranges of the models}
+
+\item{ncores}{number of cores to use to calculate model comparisons,
+system specific and defaults to 1 threat (default = 1)}
 }
 \description{
 Model comparison routine to faciliate model development
