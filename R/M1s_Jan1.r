@@ -18,20 +18,19 @@
 M1s_Jan1 = function(par, data){
 
   # exit the routine as some parameters are missing
-  if (length(par) != 4){
+  if (length(par) != 3){
     stop("model parameter(s) out of range (too many, too few)")
   }
 
   # extract the parameter values from the
   # par argument for readability
-  b = par[1]
-  c = par[2]
-  k = par[3]
-  F_crit = par[4]
+  c = par[1]
+  k = par[2]
+  F_crit = par[3]
 
   # create forcing/chilling rate vector
   # forcing
-  Rf = 1 / (1 + exp(-b * (data$Ti - c)))
+  Rf = 1 / (1 + exp(-0.5 * (data$Ti - c)))
   Rf = ((data$Li / 10) ^ k) * Rf
   Rf[1:102,] = 0
 
