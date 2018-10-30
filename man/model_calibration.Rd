@@ -6,7 +6,7 @@
 and quick validation of a (new) model.}
 \usage{
 model_calibration(model = "TT", data = phenocam_DB, method = "GenSA",
-  control = list(max.call = 2000),
+  cost = rmse, control = list(max.call = 2000),
   par_ranges = sprintf("\%s/extdata/parameter_ranges.csv",
   path.package("phenor")), plot = TRUE, random_seed = round(runif(1, 1,
   1000)), ...)
@@ -22,6 +22,9 @@ input format.}
 - GenSA :  Generalized Simulated Annealing algorithm
 - genoud : GENetic Optimization Using Derivatives
 - BayesianTools: various bayesian based optimization tools}
+
+\item{cost}{the cost function to use in the optimization, it should return
+a RMSE or other value which needs to be minimized}
 
 \item{control}{list of control parameters to be passed to the optimizer}
 
