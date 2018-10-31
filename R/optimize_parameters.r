@@ -105,7 +105,7 @@ optimize_parameters = function(par = NULL,
     # so wrap the function in a do.call
     setup = BayesianTools::createBayesianSetup(
       likelihood = function(random_par){
-        do.call("likelihood",
+        do.call("likelihood_slope",
           list(par = random_par,
             data = data,
             model = model,
