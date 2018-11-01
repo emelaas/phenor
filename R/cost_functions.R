@@ -111,7 +111,7 @@ likelihood_slope = function(par,
   out = do.call(model, list(data = data,
     par = par))
 
-  if (any(is.na(out)) | sd(val)/sd(out)<0.9 | sd(val)/sd(out)>1.1) {
+  if (any(is.na(out)) | sd(val,na.rm=TRUE)/sd(out,na.rm=TRUE)<0.9 | sd(val,na.rm=TRUE)/sd(out,na.rm=TRUE)>1.1) {
     return(-1e38)
   } else {
     # return the RMSE between the validation data and
