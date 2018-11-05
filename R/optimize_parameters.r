@@ -105,6 +105,38 @@ optimize_parameters = function(par = NULL,
     # so wrap the function in a do.call
     setup = BayesianTools::createBayesianSetup(
       likelihood = function(random_par){
+        do.call("likelihood",
+          list(par = random_par,
+            data = data,
+            model = model,
+            sd_range = sd_range))},
+      lower = lower,
+      upper = upper)
+
+    # calculate the runs
+    out = BayesianTools::runMCMC(bayesianSetup = setup,
+      sampler = control$sampler,
+      settings = control$settings)
+
+    # correct formatting in line with other outputs
+    optim_par = list("par" = BayesianTools::MAP(out)$parametersMAP,
+      "bt_output" = out)
+  }
+
+
+
+  # BayesianTools (w/ slope constraint)
+  if (tolower(method) == "bayesiantools_slope"){
+
+    # Set the sd metric fixed to 1/5 of the range defined
+    # by upper and lower limits. This ensures proper sampling
+    # across widely different ranges.
+    sd_range = abs(upper - lower)/5
+
+    # setup the bayes run, no message forwarding is provided
+    # so wrap the function in a do.call
+    setup = BayesianTools::createBayesianSetup(
+      likelihood = function(random_par){
         do.call("likelihood_slope",
           list(par = random_par,
             data = data,
