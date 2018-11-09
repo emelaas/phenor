@@ -15,7 +15,7 @@
 
 PTT_Jan1 = function(par, data){
   # exit the routine as some parameters are missing
-  if (length(par) != 3){
+  if (length(par) != 2){
     stop("model parameter(s) out of range (too many, too few)")
   }
 
