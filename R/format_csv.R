@@ -36,17 +36,24 @@ format_csv <- function(file = "~/Desktop/vame_phenology.csv",
     lon = unique(df$long)
 
     # download daymet data for a given site
-    daymet_data = try(daymetr::download_daymet(
+    daymet_data = daymetr::download_daymet(
       site = site,
       lat = lat,
       lon = lon,
       start = 1980,
       end = end,
       internal = TRUE,
-      silent = TRUE
-    )$data,
       silent = TRUE)
-
+    
+    # added on 12/27/2018 b/c Daymet data stacked for some reason
+    daymet_data2 <- daymet_data[1:(nrow(daymet_data)/7),]
+    daymet_data2 <- daymet_data2[-c(7,8)]
+    vars <- daymet_data$value
+    dim(vars) <- c((nrow(daymet_data)/7),7)
+    daymet_data2 <- cbind(daymet_data2,vars)
+    colnames(daymet_data2)[7:13] <- names(table(daymet_data$measurement))
+    daymet_data <- daymet_data2
+    
     # trap sites outside daymet coverage
     if (inherits(daymet_data,"try-error")){
       return(NULL)
